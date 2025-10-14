@@ -31,8 +31,9 @@ export async function createPost(data: PostCreationData) {
 
 		return { success: false, error: "Failed to create post" };
 		
-	}
+	}	
+}
 
+export async function getPosts() {
 	
-		
 }
