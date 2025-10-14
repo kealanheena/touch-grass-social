@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/components/ThemeProvider"
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar"
-import ImageBackground from "@/components/ImageBackground";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,7 +42,6 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <div className="m-h-screen">
-              {/* <ImageBackground /> */}
               <Navbar />
 
               <main className="py-8">
