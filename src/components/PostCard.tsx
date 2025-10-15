@@ -24,10 +24,11 @@ function PostCard({ post, dbUserId } : { post: Post, dbUserId: string | null }) 
 	const [isCommenting, setIsCommenting] = useState(false);
 	const [isLiking, setIsLiking] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
-	const [hasLiked, setHasLiked] = useState(post.likes.some(like => {
+	const [hasLiked, setHasLiked] = useState(post.likes.some(like => (
 		like.userId === dbUserId
-	}));
+  )));
 	const [optimisticLikes, setOptimisticLikes] = useState(post._count.likes);
+  const [showComments, setShowComments] = useState(false);
 
 	const onClickLike = async () => {
 		if (isLiking) {
@@ -42,9 +43,9 @@ function PostCard({ post, dbUserId } : { post: Post, dbUserId: string | null }) 
 			await toggleLike(post.id);
 		} catch (error) {
 			setOptimisticLikes(post._count.likes);
-			setHasLiked(post.likes.some(like => {
+			setHasLiked(post.likes.some(like => (
 				like.userId === dbUserId
-			}));
+      )));
 		} finally {
 			setIsLiking(false);
 		}
@@ -70,6 +71,8 @@ function PostCard({ post, dbUserId } : { post: Post, dbUserId: string | null }) 
 			setIsCommenting(false);
 		}
 	};
+
+  const onChangeComment = (e) => setNewComment(e.target.value);
 
 	const onClickDeletePost = async () => {
 		if (isDeleting) {
@@ -212,7 +215,7 @@ function PostCard({ post, dbUserId } : { post: Post, dbUserId: string | null }) 
                     <Textarea
                       placeholder="Write a comment..."
                       value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
+                      onChange={onChangeComment}
                       className="min-h-[80px] resize-none"
                     />
                     <div className="flex justify-end mt-2">
