@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 
-import { getPosts } from '@/actions/post.action';
+import { getPosts, toggleLike } from '@/actions/post.action';
 
 type Posts = Awaited<ReturnType<typeof getPosts>>
 type Post = Posts[number]
