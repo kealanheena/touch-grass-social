@@ -1,4 +1,3 @@
-@ -0,0 +1,22 @@
 "use client"
 
 import React from 'react';
