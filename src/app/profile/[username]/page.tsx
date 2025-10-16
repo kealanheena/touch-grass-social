@@ -1,7 +1,10 @@
 import { getProfileByUsername } from "@/actions/profile.action";
+import type { Metadata } from "next";
 
-export async function generateMetadata({ params }: { params: { username: string } }) {
-	const user = getProfileByUsername(params.username)
+type user = Awaited<ReturnType<typeof getProfileByUsername>>;
+
+export async function generateMetadata({ params }: { params: { username: string } }): Promise<Metadata | undefined> {
+	const user: user = await getProfileByUsername(params.username);
 
 	if (!user) {
 		return;
