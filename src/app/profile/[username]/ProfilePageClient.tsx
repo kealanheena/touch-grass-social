@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 
-import { getProfileByUsername, isFollowing } from "@/actions/profile.action";
+import { getProfileByUsername, isFollowing, updateProfile } from "@/actions/profile.action";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
@@ -12,6 +12,12 @@ import { CalendarIcon, EditIcon, LinkIcon, MapPinIcon } from "lucide-react";
 import { format } from "date-fns";
 import { toggleFollow } from "@/actions/user.action";
 import toast from "react-hot-toast";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialogHeader } from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 type User = Awaited<ReturnType<typeof getProfileByUsername>>;
 type IsFollowing = Awaited<ReturnType<typeof isFollowing>>; // incase I change the function in future
@@ -29,6 +35,7 @@ function ProfilePageClient({
 
 	const [isFollowing, setIsFollowing] = useState(false);
 	const [isUpdatingFollow, setIsUpdatingFollow] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const onClickFollow = async () => {
     if (!currentUser) return;
@@ -43,6 +50,28 @@ function ProfilePageClient({
       setIsUpdatingFollow(false);
     }
   };
+
+  const onClickSubmit = async () => {
+    const formData = new FormData();
+    Object.entries(editForm).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+
+    const result = await updateProfile(formData);
+    if (result.success) {
+      setShowEditDialog(false);
+      toast.success("Profile updated successfully");
+    }
+  };
+
+  const [editForm, setEditForm] = useState({
+    name: user.name || "",
+    bio: user.bio || "",
+    location: user.location || "",
+    website: user.website || "",
+  });
+
+  const onClickEditProfile = () => setShowEditDialog(true);
 
 	 const isOwnProfile =
     currentUser?.username === user.username ||
@@ -90,10 +119,9 @@ function ProfilePageClient({
                     <Button className="w-full mt-4">Follow</Button>
                   </SignInButton>
                 ) : isOwnProfile ? (
-									// TODO: add onClickEditProfile Function
                   <Button
 										className="w-full mt-4"
-										onClick={() => {}}
+										onClick={onClickEditProfile}
 									>
                     <EditIcon className="size-4 mr-2" />
                     Edit Profile
@@ -141,6 +169,60 @@ function ProfilePageClient({
             </CardContent>
           </Card>
         </div>
+
+
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <AlertDialogHeader>
+              <DialogTitle>Edit Profile</DialogTitle>
+            </AlertDialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input
+                  name="name"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  placeholder="Your name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Bio</Label>
+                <Textarea
+                  name="bio"
+                  value={editForm.bio}
+                  onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                  className="min-h-[100px]"
+                  placeholder="Tell us about yourself"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Location</Label>
+                <Input
+                  name="location"
+                  value={editForm.location}
+                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                  placeholder="Where are you based?"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Website</Label>
+                <Input
+                  name="website"
+                  value={editForm.website}
+                  onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                  placeholder="Your personal website"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={onClickSubmit}>Save Changes</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
 	)
