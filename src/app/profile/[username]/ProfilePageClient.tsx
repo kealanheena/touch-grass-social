@@ -10,6 +10,8 @@ import { Separator } from "@radix-ui/react-separator";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, EditIcon, LinkIcon, MapPinIcon } from "lucide-react";
 import { format } from "date-fns";
+import { toggleFollow } from "@/actions/user.action";
+import toast from "react-hot-toast";
 
 type User = Awaited<ReturnType<typeof getProfileByUsername>>;
 type IsFollowing = Awaited<ReturnType<typeof isFollowing>>; // incase I change the function in future
@@ -27,6 +29,20 @@ function ProfilePageClient({
 
 	const [isFollowing, setIsFollowing] = useState(false);
 	const [isUpdatingFollow, setIsUpdatingFollow] = useState(false);
+
+  const onClickFollow = async () => {
+    if (!currentUser) return;
+
+    try {
+      setIsUpdatingFollow(true);
+      await toggleFollow(user.id);
+      setIsFollowing(!isFollowing);
+    } catch (error) {
+      toast.error("Failed to update follow status");
+    } finally {
+      setIsUpdatingFollow(false);
+    }
+  };
 
 	 const isOwnProfile =
     currentUser?.username === user.username ||
@@ -83,10 +99,9 @@ function ProfilePageClient({
                     Edit Profile
                   </Button>
                 ) : (
-									// TODO: add onClickFollow Function
                   <Button
                     className="w-full mt-4"
-                    onClick={() => {}}
+                    onClick={onClickFollow}
                     disabled={isUpdatingFollow}
                     variant={isFollowing ? "outline" : "default"}
                   >
