@@ -1,10 +1,13 @@
-import { getProfileByUsername } from "@/actions/profile.action";
+import { getProfileByUsername, isFollowing } from "@/actions/profile.action";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-type user = Awaited<ReturnType<typeof getProfileByUsername>>;
+import ProfilePageClient from "./ProfilePageClient";
+
+type User = Awaited<ReturnType<typeof getProfileByUsername>>;
 
 export async function generateMetadata({ params }: { params: { username: string } }): Promise<Metadata | undefined> {
-	const user: user = await getProfileByUsername(params.username);
+	const user: User = await getProfileByUsername(params.username);
 
 	if (!user) {
 		return;
@@ -16,14 +19,21 @@ export async function generateMetadata({ params }: { params: { username: string 
 	}
 }
 
-function ProfilePage({ params }: { params: { username: string } }) {
-	console.log({ params });
+async function ProfilePageServer({ params }: { params: { username: string } }) {
+	const user = await getProfileByUsername(params.username)
+
+	if (!user) {
+		notFound();
+	}
+
+	const isCurrentUserFollowing = await isFollowing(user.id);
 
 	return (
-		<div>
-			Profile Page
-		</div>
+		<ProfilePageClient
+			user={user}
+			isFollowing={isCurrentUserFollowing}
+		/>
 	)
 }
 
-export default ProfilePage;
+export default ProfilePageServer;
