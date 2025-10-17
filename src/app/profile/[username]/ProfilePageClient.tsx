@@ -2,38 +2,45 @@
 
 import React, { useState } from "react";
 
-import { getProfileByUsername, isFollowing, updateProfile } from "@/actions/profile.action";
+import { getProfileByUsername, getUserPosts, isFollowing, updateProfile } from "@/actions/profile.action";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { Separator } from "@radix-ui/react-separator";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, EditIcon, LinkIcon, MapPinIcon } from "lucide-react";
+import { CalendarIcon, EditIcon, FileTextIcon, HeartIcon, LinkIcon, MapPinIcon } from "lucide-react";
 import { format } from "date-fns";
 import { toggleFollow } from "@/actions/user.action";
 import toast from "react-hot-toast";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { AlertDialogHeader } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PostCard from "@/components/PostCard";
 
 type User = Awaited<ReturnType<typeof getProfileByUsername>>;
+type Posts = Awaited<ReturnType<typeof getUserPosts>>;
 type IsFollowing = Awaited<ReturnType<typeof isFollowing>>; // incase I change the function in future
 
 interface ProfilePageClientProps {
-	user: NonNullable<User>;
-	isFollowing: IsFollowing;
+  user: NonNullable<User>;
+  posts: Posts;
+  likedPosts: Posts;
+  isFollowing: IsFollowing;
 }
 
-function ProfilePageClient({ 
-	user,
-	isFollowing: InitialisFollowing
+
+function ProfilePageClient({
+  user,
+  posts,
+  likedPosts,
+  isFollowing: initialIsFollowing,
 }: ProfilePageClientProps) {
 	const { user: currentUser } = useUser();
 
-	const [isFollowing, setIsFollowing] = useState(false);
+	const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
 	const [isUpdatingFollow, setIsUpdatingFollow] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
 
@@ -80,7 +87,7 @@ function ProfilePageClient({
   const formattedDate = format(new Date(user.createdAt), "MMMM yyyy");
 
 	return (
-		<div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       <div className="grid grid-cols-1 gap-6">
         <div className="w-full max-w-lg mx-auto">
           <Card className="bg-card">
@@ -170,12 +177,52 @@ function ProfilePageClient({
           </Card>
         </div>
 
+        <Tabs defaultValue="posts" className="w-full">
+          <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+            <TabsTrigger
+              value="posts"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
+               data-[state=active]:bg-transparent px-6 font-semibold"
+            >
+              <FileTextIcon className="size-4" />
+              Posts
+            </TabsTrigger>
+            <TabsTrigger
+              value="likes"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
+               data-[state=active]:bg-transparent px-6 font-semibold"
+            >
+              <HeartIcon className="size-4" />
+              Likes
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="posts" className="mt-6">
+            <div className="space-y-6">
+              {posts.length > 0 ? (
+                posts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">No posts yet</div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="likes" className="mt-6">
+            <div className="space-y-6">
+              {likedPosts.length > 0 ? (
+                likedPosts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">No liked posts to show</div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
 
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
           <DialogContent className="sm:max-w-[500px]">
-            <AlertDialogHeader>
+            <DialogHeader>
               <DialogTitle>Edit Profile</DialogTitle>
-            </AlertDialogHeader>
+            </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label>Name</Label>
