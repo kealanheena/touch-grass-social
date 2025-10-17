@@ -1,6 +1,12 @@
 ### Touch Grass Social
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Tools
+
+- database (neon): https://console.neon.tech/
+- image upload (uploadthing): https://uploadthing.com/
+- signin (clerk): https://dashboard.clerk.com/
+
 ## Getting Started
 
 First, run the development server:
